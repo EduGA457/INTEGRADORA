@@ -1,6 +1,8 @@
 import express from 'express'
 import morgan from 'morgan'
 import authRoutes from './routes/auth.routes'
+import sensorRoutes from './routes/sensor.routes'
+import reportRoutes from './routes/report.routes'
 import connectDBMongo from './config/db';
 import cors from 'cors';
 
@@ -16,6 +18,10 @@ app.use(cors());
 
 //ruta principal
 app.use('/api/auth', authRoutes);
+
+//rutas de los para modulos
+app.use('/api/sensor', sensorRoutes)
+app.use('/api/reports', reportRoutes); 
 
 connectDBMongo().then(() => {
     app.listen(PORT,()=>{

@@ -4,7 +4,7 @@ import { cache } from '../utils/cache'
 import dayjs from 'dayjs';
 import { User } from '../models/user';
 
-// endpoint recibe un request , responde un response
+
 export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
