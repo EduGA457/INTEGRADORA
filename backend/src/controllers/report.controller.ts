@@ -1,6 +1,33 @@
 import { Request, Response } from 'express';
 import { Report } from '../models/report';
 
+
+// Crear un nuevo reporte
+export const createReport = async (req: Request, res: Response) => {
+    try {
+        const { userId, reportType, location, data } = req.body;
+        if (!userId || !reportType || !location || !data) {
+            return res.status(400).json({ message: 'Faltan datos requeridos' });
+        }
+        const newReport = new Report({
+            userId,
+            reportType,
+            location: {
+                type: 'Point',
+                coordinates: [location.longitude, location.latitude]
+            },
+            data,
+            status: 'PENDIENTE',
+            createDate: new Date()
+        });
+        const savedReport = await newReport.save();
+        res.status(201).json(savedReport);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al crear el reporte', error });
+    }
+};  
+
+
 //  Obtener todos los reportes con filtros opcionales
 export const getAllReports = async (req: Request, res: Response) => {
     try {

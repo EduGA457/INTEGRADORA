@@ -6,11 +6,11 @@ export interface ISensorReading {
   sensors: {
     ambientHumidity: {
       value: number;
-      unit?: string;
+      unit: string;
     };
     ambientTemperature: {
       value: number;
-      unit?: string;
+      unit: string;
     };
     airQuality: {
       value: number;
@@ -19,12 +19,12 @@ export interface ISensorReading {
     };
     voltage: {
       value: number;
-      unit?: string;
+      unit: string;
     };
     soilMoisture: {
       rawValue: number;
       percentage: number;
-      unit?: string;
+      unit: string;
     };
   };
 }
@@ -65,7 +65,7 @@ const sensorReadingSchema = new Schema<ISensorReading>({
         default: "Celsius" 
       }
     },
-    // Calidad del aire (MQ-2)
+    // Calidad del aire (MQ)
     airQuality: {
       value: { 
         type: Number,
@@ -80,7 +80,7 @@ const sensorReadingSchema = new Schema<ISensorReading>({
         default: "Bajo"
       }
     },
-    // Voltaje (ADC del ESP32)
+    // Voltaje ()
     voltage: {
       value: { 
         type: Number,

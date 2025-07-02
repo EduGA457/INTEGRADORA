@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generateAccesToken } from '../utils/generateToken';
+import { generateAccessToken } from '../utils/generateToken';
 import { cache } from '../utils/cache'
 import dayjs from 'dayjs';
 import { User } from '../models/user';
@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response) => {
             return res.status(403).json({ message: "Usuario desactivado" });
         }
 
-        const accessToken = generateAccesToken(user._id.toString());
+        const accessToken = generateAccessToken(user._id.toString());
         cache.set(user._id.toString(), accessToken, 60 * 15);
 
         const { password: _, ...userWithoutPassword } = user.toObject();

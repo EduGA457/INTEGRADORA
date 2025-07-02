@@ -1,16 +1,20 @@
 import jwt from "jsonwebtoken";
-const ACCES_SECRET="secret1234utd";
+import dotenv from 'dotenv';
 
+dotenv.config();
 
+export const generateAccessToken = (user: string) => {
+    // Verifica que la variable de entorno exista
+    const secret = process.env.JWT_ACCESS_SECRET;
+    if (!secret) {
+        throw new Error('JWT_ACCESS_SECRET no está definido en las variables de entorno');
+    }
 
-export const generateAccesToken=(user:string)=>{
     return jwt.sign(
-        { user },
-        ACCES_SECRET,
+        { user }, // payload
+        secret,   // secret key
         {
-        expiresIn:"15m"
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m" // expiration
         }
-);
+    );
 }
-
-

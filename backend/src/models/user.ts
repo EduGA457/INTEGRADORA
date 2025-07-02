@@ -9,6 +9,7 @@ export interface IUser extends Document {
     email: string;
     phone: string;
     role: string;
+    
     status: boolean;
     createDate: Date;
     deleteDate: Date;
