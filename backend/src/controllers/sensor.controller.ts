@@ -10,6 +10,103 @@ const SensorTypes = {
   SOIL_MOISTURE: 'soilMoisture'
 } as const;    //diccionario de tipos de sensores
 
+
+export const saveSensorReading = async (req: Request, res: Response) => {
+  const { deviceId, timestamp, sensors } = req.body;
+
+  // Validación de campos requeridos
+  if (!deviceId || !sensors) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required parameters',
+      details: {
+        required: ['deviceId', 'sensors'],
+        received: Object.keys(req.body)
+      }
+    });
+  }
+
+  try {
+    // Validación de timestamp (opcional)
+    const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
+    if (isNaN(parsedTimestamp.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid timestamp format',
+        expectedFormat: 'ISO 8601 (e.g., "2023-07-20T12:00:00Z")'
+      });
+    }
+
+    // Validación de estructura de sensores
+    if (!sensors.ambientHumidity && !sensors.ambientTemperature && 
+        !sensors.airQuality && !sensors.soilMoisture) {
+      return res.status(400).json({
+        success: false,
+        error: 'Estructura de sensores inválida',
+        expected: 'At least one sensor reading must be provided'
+      });
+    }
+
+    // Calcular porcentaje de humedad del suelo si solo viene rawValue
+    if (sensors.soilMoisture && sensors.soilMoisture.rawValue && !sensors.soilMoisture.percentage) {
+      // Mapeo de 0 (muy húmedo) a 4095 (muy seco) a porcentaje 0-100%
+      sensors.soilMoisture.percentage = 100 - Math.round((sensors.soilMoisture.rawValue / 4095) * 100);
+    }
+
+    // Determinar nivel de riesgo para calidad del aire
+    if (sensors.airQuality && sensors.airQuality.value) {
+      const aq = sensors.airQuality.value;
+      if (aq <= 50) sensors.airQuality.riskLevel = "Bajo";
+      else if (aq <= 100) sensors.airQuality.riskLevel = "Moderado";
+      else if (aq <= 200) sensors.airQuality.riskLevel = "Alto";
+      else sensors.airQuality.riskLevel = "Peligroso";
+    }
+
+    // Crear y guardar el documento
+    const newReading = new SensorReading({
+      deviceId,
+      timestamp: parsedTimestamp,
+      sensors
+    });
+
+    const savedReading = await newReading.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Lectura de sensor guardada correctamente',
+      data: {
+        id: savedReading._id,
+        deviceId: savedReading.deviceId,
+        timestamp: savedReading.timestamp,
+        sensors: savedReading.sensors
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Error guardando la lectura:', error);
+
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => ({
+        field: err.path,
+        message: err.message
+      }));
+
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: errors
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+
 // consulta para obtener lecturas de sensores por tipo
 export const getSensorReadingbySensor = async (req: Request, res: Response) => {
   const { sensorType } = req.query;

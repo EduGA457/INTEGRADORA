@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import authRoutes from './routes/auth.routes';
 import sensorRoutes from './routes/sensor.routes';
 import reportRoutes from './routes/report.routes';
+import  LoginHistoryroutes  from './routes/loginHistory.routes'
 import connectDBMongo from './config/db';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -24,7 +25,7 @@ app.use(cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/sensor', sensorRoutes);
 app.use('/api/reports', reportRoutes);
-
+app.use('/api/login-history', LoginHistoryroutes);
 
 connectDBMongo().then(() => {
   app.listen(PORT, () => {

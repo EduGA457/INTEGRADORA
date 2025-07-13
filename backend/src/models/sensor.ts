@@ -17,10 +17,6 @@ export interface ISensorReading {
       unit: string;
       riskLevel?: string;
     };
-    voltage: {
-      value: number;
-      unit: string;
-    };
     soilMoisture: {
       rawValue: number;
       percentage: number;
@@ -80,16 +76,6 @@ const sensorReadingSchema = new Schema<ISensorReading>({
         default: "Bajo"
       }
     },
-    // Voltaje ()
-    voltage: {
-      value: { 
-        type: Number,
-      },
-      unit: { 
-        type: String, 
-        default: "V" 
-      }
-    },
     // Humedad del suelo (FC-28)
     soilMoisture: {
       rawValue: { 
@@ -113,10 +99,9 @@ const sensorReadingSchema = new Schema<ISensorReading>({
   versionKey: false
 });
 
-
 sensorReadingSchema.index({ 
   deviceId: 1, 
   timestamp: -1 
 });
 
-export const SensorReading = model<ISensorReading>('SensorReading', sensorReadingSchema,'sensor_readings');
+export const SensorReading = model<ISensorReading>('SensorReading', sensorReadingSchema, 'sensor_readings');

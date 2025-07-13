@@ -4,7 +4,6 @@ import { Document, Schema, model } from 'mongoose';
 export interface ILoginHistory {
   userId: string;
   email: string;
-  ipAddress: string;
   userAgent: string;
   loginAt: Date;
   success: boolean;
@@ -18,10 +17,6 @@ const LoginHistorySchema = new Schema<ILoginHistory>({
     required: true 
 },
   email: { 
-    type: String, 
-    required: true 
-},
-  ipAddress: { 
     type: String, 
     required: true 
 },

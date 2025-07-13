@@ -3,25 +3,60 @@ import { generateAccessToken } from '../utils/generateToken';
 import { cache } from '../utils/cache'
 import dayjs from 'dayjs';
 import { User } from '../models/user';
-
+import { LoginHistory } from '../models/loginHistory';
 
 export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
+    const userAgent = req.headers['user-agent'] || '';
 
     try {
         const user = await User.findOne({ username }).select('+password');
+        
+        // 1. Registrar intento fallido (usuario no existe)
         if (!user) {
+            await LoginHistory.create({
+                userId: null,
+                email: username,
+                userAgent,
+                success: false,
+                failureReason: 'Usuario no encontrado'
+            });
             return res.status(401).json({ message: "Credenciales Incorrectas" });
         }
 
         const isMatch = await user.comparePassword(password);
+        
+        // 2. Registrar contraseña incorrecta
         if (!isMatch) {
+            await LoginHistory.create({
+                userId: user._id.toString(),
+                email: user.email,
+                userAgent,
+                success: false,
+                failureReason: 'Contraseña incorrecta'
+            });
             return res.status(401).json({ message: "Credenciales Incorrectas" });
         }
 
+        // 3. Registrar usuario desactivado
         if (!user.status) {
+            await LoginHistory.create({
+                userId: user._id.toString(),
+                email: user.email,
+                userAgent,
+                success: false,
+                failureReason: 'Usuario desactivado'
+            });
             return res.status(403).json({ message: "Usuario desactivado" });
         }
+
+        // 4. Registrar login exitoso
+        await LoginHistory.create({
+            userId: user._id.toString(),
+            email: user.email,
+            userAgent,
+            success: true
+        });
 
         const accessToken = generateAccessToken(user._id.toString());
         cache.set(user._id.toString(), accessToken, 60 * 15);
